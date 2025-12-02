@@ -108,14 +108,27 @@ function Flow() {
     [],
   );
 
-  const onPaneContextMenu = useCallback(() => {
+  const onPaneContextMenu = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+      event.preventDefault();
+
+      // Calculate position for the menu
+      const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : (event as React.MouseEvent);
+
+      setMenu({
+          id: 'context-menu',
+          top: clientY,
+          left: clientX,
+      });
+  }, []);
+
+  const onPaneClick = useCallback(() => {
       setMenu(null);
       connectingNodeId.current = null;
       connectingHandleId.current = null;
   }, []);
 
   const onMenuAdd = useCallback((type: 'dialogue' | 'choice') => {
-    if (!menu || !connectingNodeId.current) return;
+    if (!menu) return;
 
     const position = screenToFlowPosition({
       x: menu.left,
@@ -143,14 +156,16 @@ function Flow() {
 
     setNodes((nds) => nds.concat(newNode));
 
-    // Create connection
-    const edge: Edge = {
-        id: `e${connectingNodeId.current}-${id}`,
-        source: connectingNodeId.current,
-        target: id,
-        sourceHandle: connectingHandleId.current,
-    };
-    setEdges((eds) => addEdge(edge, eds));
+    // Create connection if triggered by connection drag
+    if (connectingNodeId.current) {
+        const edge: Edge = {
+            id: `e${connectingNodeId.current}-${id}`,
+            source: connectingNodeId.current,
+            target: id,
+            sourceHandle: connectingHandleId.current,
+        };
+        setEdges((eds) => addEdge(edge, eds));
+    }
 
     setMenu(null);
     connectingNodeId.current = null;
@@ -339,6 +354,7 @@ function Flow() {
             onConnect={onConnect}
             onConnectStart={onConnectStart}
             onConnectEnd={onConnectEnd}
+            onPaneClick={onPaneClick}
             onPaneContextMenu={onPaneContextMenu}
             nodeTypes={nodeTypes}
             fitView
