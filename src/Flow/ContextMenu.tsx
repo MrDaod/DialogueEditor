@@ -1,6 +1,6 @@
 import React from 'react';
 import { MessageSquare, Split } from 'lucide-react';
-import { MenuState } from '../../hooks/useContextMenu';
+import { MenuState } from '../hooks/useContextMenu';
 
 type ContextMenuProps = {
     menu: MenuState;

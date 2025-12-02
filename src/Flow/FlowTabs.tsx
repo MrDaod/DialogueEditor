@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { FlowSheet } from '../../types/flow';
+import { FlowSheet } from '../types/flow';
 
 type FlowTabsProps = {
     sheets: FlowSheet[];
@@ -70,7 +70,7 @@ export function FlowTabs({
             <button
                 onClick={createNewSheet}
                 className="ml-1 p-1.5 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-md mb-1"
-                title="新建流程"
+                title="新建对话流"
             >
                 <Plus className="w-4 h-4" />
             </button>

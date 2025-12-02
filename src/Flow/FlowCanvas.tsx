@@ -7,7 +7,7 @@ import {
     BackgroundVariant,
     NodeTypes,
 } from '@xyflow/react';
-import { useTheme } from '../../hooks/useTheme';
+import { useTheme } from '../hooks/useTheme';
 
 type FlowCanvasProps = {
     nodes: any[];

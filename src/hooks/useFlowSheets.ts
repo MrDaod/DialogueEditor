@@ -10,7 +10,7 @@ export function useFlowSheets(
     setEdges: (edges: Edge[]) => void
 ) {
     const [sheets, setSheets] = useState<FlowSheet[]>([
-        { id: 'default', name: '流程 1', nodes: initialNodes, edges: initialEdges }
+        { id: 'default', name: '对话流 1', nodes: initialNodes, edges: initialEdges }
     ]);
     const [activeSheetId, setActiveSheetId] = useState('default');
     const { getNodes, getEdges } = useReactFlow();
@@ -26,6 +26,7 @@ export function useFlowSheets(
         ));
 
         // Load new state
+        // @ts-ignore
         const targetSheet = sheets.find(s => s.id === targetId);
         if (targetSheet) {
             setNodes(targetSheet.nodes);
@@ -44,7 +45,7 @@ export function useFlowSheets(
         const newId = `sheet-${Date.now()}`;
         const newSheet: FlowSheet = {
             id: newId,
-            name: `流程 ${sheets.length + 1}`,
+            name: `对话流 ${sheets.length + 1}`,
             nodes: [],
             edges: []
         };
@@ -60,7 +61,7 @@ export function useFlowSheets(
         if (window.confirm('确定要关闭此页签吗？未保存的内容将丢失。')) {
             const newSheets = sheets.filter(s => s.id !== id);
             setSheets(newSheets);
-            
+
             if (id === activeSheetId) {
                 const lastSheet = newSheets[newSheets.length - 1];
                 setNodes(lastSheet.nodes);
