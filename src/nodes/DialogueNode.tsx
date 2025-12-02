@@ -1,13 +1,6 @@
-import { Handle, Position, NodeProps, Node } from '@xyflow/react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
 import { MessageSquare } from 'lucide-react';
-
-export type DialogueNodeData = {
-  speaker: string;
-  text: string;
-  onChange?: (id: string, data: DialogueNodeData) => void;
-};
-
-export type DialogueNodeType = Node<DialogueNodeData, 'dialogue'>;
+import { DialogueNodeType } from '../types/flow';
 
 export function DialogueNode({ data, id }: NodeProps<DialogueNodeType>) {
   return (

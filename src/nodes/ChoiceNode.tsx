@@ -1,17 +1,6 @@
-import { Handle, Position, NodeProps, Node } from '@xyflow/react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
 import { Split, Plus, X } from 'lucide-react';
-
-export type ChoiceOption = {
-  id: string;
-  text: string;
-}
-
-export type ChoiceNodeData = {
-  options: ChoiceOption[];
-  onChange?: (id: string, data: ChoiceNodeData) => void;
-}
-
-export type ChoiceNodeType = Node<ChoiceNodeData, 'choice'>;
+import { ChoiceNodeType } from '../types/flow';
 
 export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
   const addOption = () => {
