@@ -62,9 +62,12 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
                 type="source" 
                 position={Position.Right} 
                 id={option.id}
-                className="!bg-blue-500 !w-3 !h-3 !border-2 !border-white dark:!border-slate-800 !right-[-7px]" 
+                className="!bg-blue-500 !w-3 !h-3 !border-2 !border-white dark:!border-slate-800 !right-[-7px] transition-transform hover:scale-125" 
                 style={{ top: '70%' }} 
-             />
+             >
+                 {/* Hotspot for easier grabbing */}
+                 <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
+             </Handle>
           </div>
         ))}
         
@@ -76,7 +79,14 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
           添加选项
         </button>
       </div>
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-blue-400 dark:bg-blue-500 border-2 border-white dark:border-slate-800" />
+      <Handle 
+        type="target" 
+        position={Position.Left} 
+        className="w-3 h-3 bg-blue-400 dark:bg-blue-500 border-2 border-white dark:border-slate-800 transition-transform hover:scale-125"
+      >
+         {/* Hotspot for easier grabbing */}
+         <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
+      </Handle>
     </div>
   );
 }

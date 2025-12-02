@@ -36,8 +36,22 @@ export function DialogueNode({ data, id }: NodeProps<DialogueNodeType>) {
           />
         </div>
       </div>
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-stone-400 dark:bg-stone-500 border-2 border-white dark:border-stone-800" />
-      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-stone-400 dark:bg-stone-500 border-2 border-white dark:border-stone-800" />
+      <Handle 
+        type="target" 
+        position={Position.Left} 
+        className="w-3 h-3 bg-stone-400 dark:bg-stone-500 border-2 border-white dark:border-stone-800 transition-transform hover:scale-125" 
+      >
+          {/* Hotspot for easier grabbing */}
+          <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
+      </Handle>
+      <Handle 
+        type="source" 
+        position={Position.Right} 
+        className="w-3 h-3 bg-stone-400 dark:bg-stone-500 border-2 border-white dark:border-stone-800 transition-transform hover:scale-125" 
+      >
+          {/* Hotspot for easier grabbing */}
+          <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
+      </Handle>
     </div>
   );
 }
