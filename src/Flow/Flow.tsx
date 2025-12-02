@@ -1,4 +1,4 @@
-import React from 'react';
+import {useRef} from 'react';
 import {
     useNodesState,
     useEdgesState,
@@ -37,16 +37,16 @@ export function Flow() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const { screenToFlowPosition } = useReactFlow();
-    
+
     const { darkMode, toggleDarkMode } = useTheme();
     const { menu, setMenu, onPaneContextMenu } = useContextMenu();
-    
+
     const { onChange, addDialogueNode, addChoiceNode } = useNodesLogic(setNodes);
-    
-    const { 
-        onConnect, 
-        onConnectStart, 
-        onConnectEnd, 
+
+    const {
+        onConnect,
+        onConnectStart,
+        onConnectEnd,
         onPaneClick,
         connectingNodeId,
         connectingHandleId
@@ -61,17 +61,17 @@ export function Flow() {
         updateSheetName
     } = useFlowSheets(setNodes, setEdges);
 
-    const { 
-        fileInputRef, 
-        onExport, 
-        onImport, 
-        triggerImport 
+    const {
+        onSave,
+        onLoad,
+        onSetDirectory,
+        hasDirectory
     } = useFlowIO(setNodes, setEdges, sheets, activeSheetId, onChange);
 
     // Wrap addNode to use with menu
     const onMenuAdd = (type: 'dialogue' | 'choice') => {
         if (!menu) return;
-        
+
         const position = screenToFlowPosition({
             x: menu.left,
             y: menu.top,
@@ -83,7 +83,7 @@ export function Flow() {
         } else {
             newNode = addChoiceNode(position);
         }
-        
+
         // Create connection if triggered by connection drag
         if (connectingNodeId.current) {
             const edge: Edge = {
@@ -94,15 +94,17 @@ export function Flow() {
             };
             setEdges((eds) => addEdge(edge, eds));
         }
-        
+
         setMenu(null);
         connectingNodeId.current = null;
         connectingHandleId.current = null;
     };
-    
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     return (
         <div className="w-screen h-screen flex flex-col font-sans transition-colors bg-white dark:bg-stone-950">
-            <Toolbar 
+            <Toolbar
                 addDialogueNode={() => addDialogueNode()}
                 addChoiceNode={() => addChoiceNode()}
                 darkMode={darkMode}
@@ -113,13 +115,18 @@ export function Flow() {
                         setEdges([]);
                     }
                 }}
-                onExport={onExport}
-                triggerImport={triggerImport}
-                fileInputRef={fileInputRef}
-                onImport={onImport}
-            />
-            
-            <FlowTabs 
+                onSave={onSave}
+                onLoad={onLoad}
+                onSetDirectory={onSetDirectory}
+                hasDirectory={hasDirectory} onExport={function (): void {
+                throw new Error("Function not implemented.");
+            }} triggerImport={function (): void {
+                throw new Error("Function not implemented.");
+            }} fileInputRef={fileInputRef} onImport={function (): void {
+                throw new Error("Function not implemented.");
+            }}></Toolbar>
+
+            <FlowTabs
                 sheets={sheets}
                 activeSheetId={activeSheetId}
                 switchSheet={switchSheet}
@@ -127,7 +134,7 @@ export function Flow() {
                 closeSheet={closeSheet}
                 updateSheetName={updateSheetName}
             />
-            
+
             <FlowCanvas
                 nodes={nodes}
                 edges={edges}

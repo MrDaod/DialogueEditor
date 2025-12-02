@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Split, Trash2, Sun, Moon, Upload, Download } from 'lucide-react';
+import { MessageSquare, Split, Trash2, Sun, Moon, Save, FolderOpen, FolderInput } from 'lucide-react';
 
 type ToolbarProps = {
     addDialogueNode: () => void;
@@ -7,6 +7,10 @@ type ToolbarProps = {
     darkMode: boolean;
     toggleDarkMode: () => void;
     clearCanvas: () => void;
+    onSave: () => void;
+    onLoad: () => void;
+    onSetDirectory: () => void;
+    hasDirectory: boolean;
     onExport: () => void;
     triggerImport: () => void;
     fileInputRef: React.RefObject<HTMLInputElement>;
@@ -19,10 +23,10 @@ export function Toolbar({
     darkMode,
     toggleDarkMode,
     clearCanvas,
-    onExport,
-    triggerImport,
-    fileInputRef,
-    onImport
+    onSave,
+    onLoad,
+    onSetDirectory,
+    hasDirectory,
 }: ToolbarProps) {
     return (
         <div className="h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center px-6 justify-between shadow-sm z-10 shrink-0 transition-colors">
@@ -71,26 +75,29 @@ export function Toolbar({
 
                 <div className="h-6 w-px bg-stone-200 dark:bg-stone-700 mx-1"></div>
 
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={onImport}
-                    className="hidden"
-                    accept=".json"
-                />
                 <button
-                    onClick={triggerImport}
+                    onClick={onSetDirectory}
+                    className={`flex items-center gap-2 px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg text-sm font-medium transition-colors shadow-sm active:scale-95 ${hasDirectory ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' : 'text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700'}`}
+                    title={hasDirectory ? "已设置保存目录" : "设置保存目录"}
+                >
+                    <FolderInput className="w-4 h-4"/>
+                    {hasDirectory ? '目录已设' : '设置目录'}
+                </button>
+
+                <button
+                    onClick={onLoad}
                     className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700 rounded-lg text-sm font-medium transition-colors shadow-sm active:scale-95"
                 >
-                    <Upload className="w-4 h-4"/>
-                    导入
+                    <FolderOpen className="w-4 h-4"/>
+                    加载
                 </button>
                 <button
-                    onClick={onExport}
+                    onClick={onSave}
                     className="flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-stone-700 text-white hover:bg-stone-800 dark:hover:bg-stone-600 rounded-lg text-sm font-medium transition-colors shadow-md active:scale-95"
+                    title="保存 (Ctrl+S)"
                 >
-                    <Download className="w-4 h-4"/>
-                    导出
+                    <Save className="w-4 h-4"/>
+                    保存
                 </button>
             </div>
         </div>

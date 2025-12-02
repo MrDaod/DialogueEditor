@@ -1,5 +1,5 @@
 import { Edge } from '@xyflow/react';
-import { DialogueNodeType, ChoiceNodeType, FlowSheet } from '../types/flow';
+import { FlowSheet } from '../types/flow';
 
 export const exportFlow = (nodes: any[], edges: Edge[], sheets: FlowSheet[], activeSheetId: string) => {
     const nodesToExport = nodes.map(n => ({

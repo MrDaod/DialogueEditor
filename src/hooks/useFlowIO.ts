@@ -1,6 +1,5 @@
-import { useRef, useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useReactFlow, Edge } from '@xyflow/react';
-import { exportFlow, importFlow } from '../utils/file';
 import { FlowSheet } from '../types/flow';
 
 export function useFlowIO(
@@ -10,27 +9,154 @@ export function useFlowIO(
     activeSheetId: string,
     onChange: any
 ) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const { getNodes, getEdges } = useReactFlow();
+    const [dirHandle, setDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
 
-    const onExport = useCallback(() => {
-        exportFlow(getNodes(), getEdges(), sheets, activeSheetId);
+    // @ts-ignore
+    const onSetDirectory = useCallback(async () => {
+        try {
+            // @ts-ignore
+            const handle = await window.showDirectoryPicker();
+            setDirHandle(handle);
+        } catch (err) {
+            console.error('Failed to select directory:', err);
+        }
+    }, []);
+
+    // @ts-ignore
+    const saveCurrentSheet = useCallback(async () => {
+        if (!dirHandle) {
+            alert('请先设置保存目录');
+            await onSetDirectory();
+            if (!dirHandle) return; // User cancelled
+        }
+
+        // Need to re-check dirHandle as it might have been set in the previous await block?
+        // Actually, state update is async, so we might need to rely on the handle returned or updated state.
+        // But for simplicity in this flow, let's assume if dirHandle was null, user set it.
+        // However, standard way is to just return if null and let user click again or chain it.
+        // Let's try to use the state. If it's null, we prompt.
+
+        // Re-get handle from state? No, closure.
+        // We can't easily await state update in same callback.
+        // So we will rely on the user clicking save again or use a ref if we really want.
+        // For now: simple check.
+    }, [dirHandle, onSetDirectory]);
+
+    // Actual save logic
+    const saveFile = useCallback(async (handle: FileSystemDirectoryHandle) => {
+        try {
+            const nodesToExport = getNodes().map(n => ({
+                ...n,
+                data: {...n.data, onChange: undefined}
+            }));
+            const edgesToExport = getEdges();
+
+            const flowData = {
+                nodes: nodesToExport,
+                edges: edgesToExport
+            };
+
+            const currentSheet = sheets.find(s => s.id === activeSheetId);
+            const fileName = currentSheet ? `${currentSheet.name}.json` : 'game-dialogue.json';
+
+            const fileHandle = await handle.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(JSON.stringify(flowData, null, 2));
+            await writable.close();
+
+            // Optional: visual feedback
+            console.log('Saved to', fileName);
+        } catch (err) {
+            console.error('Failed to save file:', err);
+            alert('保存失败，请检查目录权限');
+        }
     }, [getNodes, getEdges, sheets, activeSheetId]);
 
-    const onImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    const onSave = useCallback(async () => {
+        if (!dirHandle) {
+             try {
+                // @ts-ignore
+                const handle = await window.showDirectoryPicker();
+                setDirHandle(handle);
+                await saveFile(handle);
+            } catch (err) {
+                // User cancelled or error
+                return;
+            }
+        } else {
+            await saveFile(dirHandle);
+        }
+    }, [dirHandle, saveFile]);
 
-        importFlow(file, (nodes, edges) => {
-            setNodes(nodes);
-            setEdges(edges);
-        }, onChange);
-        
-        if (fileInputRef.current) fileInputRef.current.value = '';
-    }, [setNodes, setEdges, onChange]);
+    const onLoad = useCallback(async () => {
+        if (!dirHandle) {
+             try {
+                // @ts-ignore
+                const handle = await window.showDirectoryPicker();
+                setDirHandle(handle);
+                // Don't auto load, just set dir? Or maybe prompt file picker from that dir?
+                // Requirement says: "change import/export to save/load, user needs to set dir first".
+                // So Load should probably pick a file from the configured dir.
+                // Let's proceed to pick file.
 
-    const triggerImport = () => fileInputRef.current?.click();
+                // We can't easily "pick file from dir" using standard file picker restricted to that dir handle in web.
+                // But we can show a UI to list files? Or just use standard showOpenFilePicker?
+                // Window.showOpenFilePicker can take a startIn option.
 
-    return { fileInputRef, onExport, onImport, triggerImport };
+                // Let's use showOpenFilePicker for loading, optionally starting in dirHandle.
+             } catch (err) {
+                 return;
+             }
+        }
+
+        try {
+            // @ts-ignore
+            const [fileHandle] = await window.showOpenFilePicker({
+                startIn: dirHandle || undefined,
+                types: [{
+                    description: 'JSON Files',
+                    accept: {'application/json': ['.json']}
+                }]
+            });
+
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            const flowData = JSON.parse(content);
+
+            if (flowData.nodes && flowData.edges) {
+                const restoredNodes = flowData.nodes.map((n: any) => ({
+                    ...n,
+                    data: {
+                        ...n.data,
+                        onChange
+                    }
+                }));
+                setNodes(restoredNodes);
+                setEdges(flowData.edges);
+            }
+        } catch (err) {
+            if ((err as any).name !== 'AbortError') {
+                console.error('Failed to load file:', err);
+                alert('加载失败');
+            }
+        }
+    }, [dirHandle, setNodes, setEdges, onChange]);
+
+    // Keyboard shortcut
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                onSave();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onSave]);
+
+    return { onSave, onLoad, onSetDirectory, hasDirectory: !!dirHandle };
 }
+
 
