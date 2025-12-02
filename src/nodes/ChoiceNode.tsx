@@ -20,7 +20,7 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
   };
 
   const updateOption = (optionId: string, text: string) => {
-    const newOptions = data.options.map(opt => 
+    const newOptions = data.options.map(opt =>
       opt.id === optionId ? { ...opt, text } : opt
     );
     data.onChange?.(id, { ...data, options: newOptions });
@@ -37,19 +37,19 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
         <Split className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" />
         <span className="text-sm font-bold text-blue-700 dark:text-blue-300">选项节点</span>
       </div>
-      
+
       <div className="p-3 flex flex-col gap-3">
         {data.options.map((option, index) => (
           <div key={option.id} className="relative">
              <label className="text-[10px] uppercase tracking-wider font-semibold text-blue-400 dark:text-blue-500 mb-0.5 block">选项 {index + 1}</label>
              <div className="relative">
-               <input 
+               <input
                   className="nodrag w-full border border-blue-200 dark:border-blue-700 dark:bg-slate-800 dark:text-blue-100 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 pr-8 transition-all"
                   value={option.text}
                   onChange={(e) => updateOption(option.id, e.target.value)}
                   placeholder="输入选项内容..."
                />
-               <button 
+               <button
                   onClick={() => removeOption(option.id)}
                   className="absolute right-1 top-1/2 -translate-y-1/2 text-blue-300 hover:text-red-500 dark:text-blue-600 dark:hover:text-red-400 p-0.5"
                   title="删除选项"
@@ -58,20 +58,20 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
                </button>
              </div>
              {/* Handle 对应每个选项 */}
-             <Handle 
-                type="source" 
-                position={Position.Right} 
+             <Handle
+                type="source"
+                position={Position.Right}
                 id={option.id}
-                className="!bg-blue-500 !w-3 !h-3 !border-2 !border-white dark:!border-slate-800 !right-[-7px] transition-transform hover:scale-125" 
-                style={{ top: '70%' }} 
+                className="!bg-blue-500 !w-3 !h-3 !border-2 !border-white dark:!border-slate-800 !right-[-7px]"
+                style={{ top: '70%' }}
              >
                  {/* Hotspot for easier grabbing */}
                  <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
              </Handle>
           </div>
         ))}
-        
-        <button 
+
+        <button
           className="nodrag flex items-center justify-center w-full border border-dashed border-blue-300 dark:border-blue-700 rounded p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm mt-1 font-medium"
           onClick={addOption}
         >
@@ -79,10 +79,10 @@ export function ChoiceNode({ data, id }: NodeProps<ChoiceNodeType>) {
           添加选项
         </button>
       </div>
-      <Handle 
-        type="target" 
-        position={Position.Left} 
-        className="w-3 h-3 bg-blue-400 dark:bg-blue-500 border-2 border-white dark:border-slate-800 transition-transform hover:scale-125"
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="w-3 h-3 bg-blue-400 dark:bg-blue-500 border-2 border-white dark:border-slate-800"
       >
          {/* Hotspot for easier grabbing */}
          <div className="absolute inset-0 -m-2 rounded-full pointer-events-auto" />
