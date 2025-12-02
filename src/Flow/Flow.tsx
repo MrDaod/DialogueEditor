@@ -59,7 +59,8 @@ export function Flow() {
         createNewSheet,
         closeSheet,
         updateSheetName,
-        updateSheetFileName
+        updateSheetFileName,
+        createSheetWithData
     } = useFlowSheets(setNodes, setEdges);
 
     const {
@@ -67,7 +68,7 @@ export function Flow() {
         onLoad,
         onSetDirectory,
         hasDirectory
-    } = useFlowIO(setNodes, setEdges, sheets, activeSheetId, onChange, updateSheetFileName);
+    } = useFlowIO(setNodes, setEdges, sheets, activeSheetId, onChange, updateSheetFileName, createSheetWithData);
 
     // Wrap addNode to use with menu
     const onMenuAdd = (type: 'dialogue' | 'choice') => {

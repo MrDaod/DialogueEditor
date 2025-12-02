@@ -8,7 +8,8 @@ export function useFlowIO(
     sheets: FlowSheet[],
     activeSheetId: string,
     onChange: any,
-    updateSheetFileName: (id: string, fileName: string) => void
+    updateSheetFileName: (id: string, fileName: string) => void,
+    createSheetWithData: (name: string, fileName: string, nodes: any[], edges: any[]) => void
 ) {
     const { getNodes, getEdges } = useReactFlow();
     const [dirHandle, setDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
@@ -147,11 +148,10 @@ export function useFlowIO(
                         onChange
                     }
                 }));
-                setNodes(restoredNodes);
-                setEdges(flowData.edges);
                 
-                // When loading a file, update the current sheet's filename
-                updateSheetFileName(activeSheetId, file.name);
+                // Create a new sheet with the loaded data
+                const sheetName = file.name.replace(/\.json$/i, '');
+                createSheetWithData(sheetName, file.name, restoredNodes, flowData.edges);
             }
         } catch (err) {
             if ((err as any).name !== 'AbortError') {
@@ -159,7 +159,7 @@ export function useFlowIO(
                 alert('加载失败');
             }
         }
-    }, [dirHandle, setNodes, setEdges, onChange]);
+    }, [dirHandle, createSheetWithData, onChange]);
 
     // Keyboard shortcut
     useEffect(() => {

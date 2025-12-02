@@ -35,6 +35,27 @@ export function useFlowSheets(
         }
     };
 
+    const createSheetWithData = (name: string, fileName: string, nodes: (DialogueNodeType | ChoiceNodeType)[], edges: Edge[]) => {
+        setSheets(prev => prev.map(sheet =>
+            sheet.id === activeSheetId
+                ? { ...sheet, nodes: getNodes() as any, edges: getEdges() }
+                : sheet
+        ));
+
+        const newId = `sheet-${Date.now()}`;
+        const newSheet: FlowSheet = {
+            id: newId,
+            name,
+            fileName,
+            nodes,
+            edges
+        };
+        setSheets(prev => [...prev, newSheet]);
+        setNodes(nodes);
+        setEdges(edges);
+        setActiveSheetId(newId);
+    };
+
     const createNewSheet = () => {
         setSheets(prev => prev.map(sheet =>
             sheet.id === activeSheetId
@@ -88,6 +109,7 @@ export function useFlowSheets(
         activeSheetId,
         switchSheet,
         createNewSheet,
+        createSheetWithData,
         closeSheet,
         updateSheetName,
         updateSheetFileName
