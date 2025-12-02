@@ -42,6 +42,7 @@ function Flow() {
         { id: 'default', name: '流程 1', nodes: initialNodes, edges: initialEdges }
     ]);
     const [activeSheetId, setActiveSheetId] = useState('default');
+    const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
 
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -253,15 +254,18 @@ function Flow() {
             edges: edgesToExport
         };
 
+        const currentSheet = sheets.find(s => s.id === activeSheetId);
+        const fileName = currentSheet ? `${currentSheet.name}.json` : 'game-dialogue.json';
+
         const jsonString = JSON.stringify(flowData, null, 2);
         const blob = new Blob([jsonString], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'game-dialogue.json';
+        link.download = fileName;
         link.click();
         URL.revokeObjectURL(url);
-    }, [getNodes, getEdges]);
+    }, [getNodes, getEdges, sheets, activeSheetId]);
 
     const onImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -358,6 +362,12 @@ function Flow() {
         }
     };
 
+    const updateSheetName = (id: string, newName: string) => {
+        setSheets(prev => prev.map(sheet =>
+            sheet.id === id ? { ...sheet, name: newName } : sheet
+        ));
+    };
+
     return (
         <div className="w-screen h-screen flex flex-col font-sans transition-colors bg-white dark:bg-stone-950">
             {/* Toolbar */}
@@ -438,6 +448,10 @@ function Flow() {
                     <div
                         key={sheet.id}
                         onClick={() => switchSheet(sheet.id)}
+                        onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSheetId(sheet.id);
+                        }}
                         className={`
                             group flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer select-none min-w-[120px] max-w-[200px] border-t border-l border-r transition-all relative
                             ${activeSheetId === sheet.id 
@@ -446,7 +460,21 @@ function Flow() {
                             }
                         `}
                     >
-                        <span className="truncate flex-1">{sheet.name}</span>
+                        {editingSheetId === sheet.id ? (
+                            <input
+                                autoFocus
+                                className="w-full bg-transparent border-none outline-none p-0 m-0"
+                                value={sheet.name}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => updateSheetName(sheet.id, e.target.value)}
+                                onBlur={() => setEditingSheetId(null)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') setEditingSheetId(null);
+                                }}
+                            />
+                        ) : (
+                            <span className="truncate flex-1">{sheet.name}</span>
+                        )}
                         {sheets.length > 1 && (
                             <button
                                 onClick={(e) => closeSheet(e, sheet.id)}
