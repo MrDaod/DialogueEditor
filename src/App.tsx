@@ -20,17 +20,29 @@ import '@xyflow/react/dist/style.css';
 
 import {DialogueNode, DialogueNodeType} from './nodes/DialogueNode';
 import {ChoiceNode, ChoiceNodeType} from './nodes/ChoiceNode';
-import {Download, Upload, MessageSquare, Split, Trash2, Sun, Moon} from 'lucide-react';
+import {Download, Upload, MessageSquare, Split, Trash2, Sun, Moon, Plus, X} from 'lucide-react';
 
 const nodeTypes: NodeTypes = {
     dialogue: DialogueNode,
     choice: ChoiceNode,
 };
 
+type FlowSheet = {
+    id: string;
+    name: string;
+    nodes: (DialogueNodeType | ChoiceNodeType)[];
+    edges: Edge[];
+};
+
 const initialNodes: (DialogueNodeType | ChoiceNodeType)[] = [];
 const initialEdges: Edge[] = [];
 
 function Flow() {
+    const [sheets, setSheets] = useState<FlowSheet[]>([
+        { id: 'default', name: '流程 1', nodes: initialNodes, edges: initialEdges }
+    ]);
+    const [activeSheetId, setActiveSheetId] = useState('default');
+
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const {getNodes, getEdges, screenToFlowPosition} = useReactFlow();
@@ -111,11 +123,20 @@ function Flow() {
         [],
     );
 
-    const onPaneContextMenu = useCallback((event: React.MouseEvent) => {
+    const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
         event.preventDefault();
 
         // Calculate position for the menu
-        const {clientX, clientY} = 'changedTouches' in event ? event.changedTouches[0] : (event as React.MouseEvent);
+        let clientX, clientY;
+        
+        if ('changedTouches' in event) {
+            const touch = (event as any).changedTouches[0];
+            clientX = touch.clientX;
+            clientY = touch.clientY;
+        } else {
+            clientX = (event as MouseEvent).clientX;
+            clientY = (event as MouseEvent).clientY;
+        }
 
         setMenu({
             id: 'context-menu',
@@ -279,6 +300,64 @@ function Flow() {
         }
     }
 
+    // Tab Management
+    const switchSheet = (targetId: string) => {
+        if (targetId === activeSheetId) return;
+
+        // Save current state
+        setSheets(prev => prev.map(sheet =>
+            sheet.id === activeSheetId
+                ? { ...sheet, nodes: getNodes() as any, edges: getEdges() }
+                : sheet
+        ));
+
+        // Load new state
+        const targetSheet = sheets.find(s => s.id === targetId);
+        if (targetSheet) {
+            setNodes(targetSheet.nodes);
+            setEdges(targetSheet.edges);
+            setActiveSheetId(targetId);
+        }
+    };
+
+    const createNewSheet = () => {
+        // Save current state first
+        setSheets(prev => prev.map(sheet =>
+            sheet.id === activeSheetId
+                ? { ...sheet, nodes: getNodes() as any, edges: getEdges() }
+                : sheet
+        ));
+
+        const newId = `sheet-${Date.now()}`;
+        const newSheet: FlowSheet = {
+            id: newId,
+            name: `流程 ${sheets.length + 1}`,
+            nodes: [],
+            edges: []
+        };
+        setSheets(prev => [...prev, newSheet]);
+        setNodes([]);
+        setEdges([]);
+        setActiveSheetId(newId);
+    };
+
+    const closeSheet = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (sheets.length <= 1) return;
+
+        if (window.confirm('确定要关闭此页签吗？未保存的内容将丢失。')) {
+            const newSheets = sheets.filter(s => s.id !== id);
+            setSheets(newSheets);
+            
+            if (id === activeSheetId) {
+                const lastSheet = newSheets[newSheets.length - 1];
+                setNodes(lastSheet.nodes);
+                setEdges(lastSheet.edges);
+                setActiveSheetId(lastSheet.id);
+            }
+        }
+    };
+
     return (
         <div className="w-screen h-screen flex flex-col font-sans transition-colors bg-white dark:bg-stone-950">
             {/* Toolbar */}
@@ -351,6 +430,40 @@ function Flow() {
                         导出
                     </button>
                 </div>
+            </div>
+
+            {/* Tabs Bar */}
+            <div className="h-10 bg-stone-100 dark:bg-stone-900 flex items-end px-2 gap-1 border-b border-stone-200 dark:border-stone-800 overflow-x-auto scrollbar-hide">
+                {sheets.map(sheet => (
+                    <div
+                        key={sheet.id}
+                        onClick={() => switchSheet(sheet.id)}
+                        className={`
+                            group flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium cursor-pointer select-none min-w-[120px] max-w-[200px] border-t border-l border-r transition-all relative
+                            ${activeSheetId === sheet.id 
+                                ? 'bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 z-10 mb-[-1px] pb-2.5' 
+                                : 'bg-stone-200 dark:bg-stone-800 border-transparent text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800'
+                            }
+                        `}
+                    >
+                        <span className="truncate flex-1">{sheet.name}</span>
+                        {sheets.length > 1 && (
+                            <button
+                                onClick={(e) => closeSheet(e, sheet.id)}
+                                className={`p-0.5 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 opacity-0 group-hover:opacity-100 transition-opacity ${activeSheetId === sheet.id ? 'opacity-100' : ''}`}
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        )}
+                    </div>
+                ))}
+                <button
+                    onClick={createNewSheet}
+                    className="ml-1 p-1.5 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-md mb-1"
+                    title="新建流程"
+                >
+                    <Plus className="w-4 h-4" />
+                </button>
             </div>
 
             {/* Editor */}
