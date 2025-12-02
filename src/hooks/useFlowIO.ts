@@ -18,7 +18,7 @@ export function useFlowIO(
     const onSetDirectory = useCallback(async () => {
         try {
             // @ts-ignore
-            const handle = await window.showDirectoryPicker();
+            const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
             setDirHandle(handle);
         } catch (err) {
             console.error('Failed to select directory:', err);
@@ -93,7 +93,7 @@ export function useFlowIO(
         if (!dirHandle) {
              try {
                 // @ts-ignore
-                const handle = await window.showDirectoryPicker();
+                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 setDirHandle(handle);
                 await saveFile(handle);
             } catch (err) {
@@ -109,7 +109,7 @@ export function useFlowIO(
         if (!dirHandle) {
              try {
                 // @ts-ignore
-                const handle = await window.showDirectoryPicker();
+                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 setDirHandle(handle);
                 // Don't auto load, just set dir? Or maybe prompt file picker from that dir?
                 // Requirement says: "change import/export to save/load, user needs to set dir first".
