@@ -23,6 +23,7 @@ export type ChoiceNodeType = Node<ChoiceNodeData, 'choice'>;
 export type FlowSheet = {
     id: string;
     name: string;
+    fileName?: string;
     nodes: (DialogueNodeType | ChoiceNodeType)[];
     edges: Edge[];
 };

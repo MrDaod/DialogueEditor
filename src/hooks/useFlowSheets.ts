@@ -77,13 +77,20 @@ export function useFlowSheets(
         ));
     };
 
+    const updateSheetFileName = (id: string, fileName: string) => {
+        setSheets(prev => prev.map(sheet =>
+            sheet.id === id ? { ...sheet, fileName } : sheet
+        ));
+    };
+
     return {
         sheets,
         activeSheetId,
         switchSheet,
         createNewSheet,
         closeSheet,
-        updateSheetName
+        updateSheetName,
+        updateSheetFileName
     };
 }
 

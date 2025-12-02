@@ -7,7 +7,8 @@ export function useFlowIO(
     setEdges: (edges: Edge[]) => void,
     sheets: FlowSheet[],
     activeSheetId: string,
-    onChange: any
+    onChange: any,
+    updateSheetFileName: (id: string, fileName: string) => void
 ) {
     const { getNodes, getEdges } = useReactFlow();
     const [dirHandle, setDirHandle] = useState<FileSystemDirectoryHandle | null>(null);
@@ -58,20 +59,34 @@ export function useFlowIO(
             };
 
             const currentSheet = sheets.find(s => s.id === activeSheetId);
-            const fileName = currentSheet ? `${currentSheet.name}.json` : 'game-dialogue.json';
+            if (!currentSheet) return;
 
-            const fileHandle = await handle.getFileHandle(fileName, { create: true });
+            const targetFileName = `${currentSheet.name}.json`;
+            
+            // If the file name has changed, try to delete the old file
+            if (currentSheet.fileName && currentSheet.fileName !== targetFileName) {
+                try {
+                    await handle.removeEntry(currentSheet.fileName);
+                } catch (e) {
+                    console.warn('Could not remove old file:', e);
+                }
+            }
+
+            const fileHandle = await handle.getFileHandle(targetFileName, { create: true });
             const writable = await fileHandle.createWritable();
             await writable.write(JSON.stringify(flowData, null, 2));
             await writable.close();
-
+            
+            // Update the sheet's tracked filename
+            updateSheetFileName(activeSheetId, targetFileName);
+            
             // Optional: visual feedback
-            console.log('Saved to', fileName);
+            console.log('Saved to', targetFileName);
         } catch (err) {
             console.error('Failed to save file:', err);
             alert('保存失败，请检查目录权限');
         }
-    }, [getNodes, getEdges, sheets, activeSheetId]);
+    }, [getNodes, getEdges, sheets, activeSheetId, updateSheetFileName]);
 
     const onSave = useCallback(async () => {
         if (!dirHandle) {
@@ -134,6 +149,9 @@ export function useFlowIO(
                 }));
                 setNodes(restoredNodes);
                 setEdges(flowData.edges);
+                
+                // When loading a file, update the current sheet's filename
+                updateSheetFileName(activeSheetId, file.name);
             }
         } catch (err) {
             if ((err as any).name !== 'AbortError') {
