@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import {
   ReactFlow,
   MiniMap,
@@ -18,7 +18,7 @@ import '@xyflow/react/dist/style.css';
 
 import { DialogueNode, DialogueNodeType } from './nodes/DialogueNode';
 import { ChoiceNode, ChoiceNodeType } from './nodes/ChoiceNode';
-import { Download, Upload, MessageSquare, Split, Trash2 } from 'lucide-react';
+import { Download, Upload, MessageSquare, Split, Trash2, Sun, Moon } from 'lucide-react';
 
 const nodeTypes: NodeTypes = {
   dialogue: DialogueNode,
@@ -33,6 +33,26 @@ function Flow() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { getNodes, getEdges } = useReactFlow();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+       return localStorage.getItem('theme') === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -139,27 +159,27 @@ function Flow() {
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col font-sans">
+    <div className="w-screen h-screen flex flex-col font-sans transition-colors bg-white dark:bg-stone-950">
       {/* Toolbar */}
-      <div className="h-16 bg-white border-b border-stone-200 flex items-center px-6 justify-between shadow-sm z-10 shrink-0">
+      <div className="h-16 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center px-6 justify-between shadow-sm z-10 shrink-0 transition-colors">
         <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 mr-4">
                 <span className="text-2xl">🎮</span>
-                <h1 className="font-bold text-lg text-stone-800">游戏对话编辑器</h1>
+                <h1 className="font-bold text-lg text-stone-800 dark:text-stone-100">游戏对话编辑器</h1>
             </div>
             
-            <div className="h-8 w-px bg-stone-200 mx-1"></div>
+            <div className="h-8 w-px bg-stone-200 dark:bg-stone-700 mx-1"></div>
             
             <button 
                 onClick={addDialogueNode}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-sm font-medium transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg text-sm font-medium transition-all active:scale-95"
             >
                 <MessageSquare className="w-4 h-4" />
                 语言节点
             </button>
              <button 
                 onClick={addChoiceNode}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-medium transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium transition-all active:scale-95"
             >
                 <Split className="w-4 h-4" />
                 选项节点
@@ -167,15 +187,25 @@ function Flow() {
         </div>
         
         <div className="flex items-center gap-3">
+            <button
+                onClick={toggleDarkMode}
+                className="p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800 rounded-lg transition-colors"
+                title={darkMode ? "切换到亮色模式" : "切换到暗黑模式"}
+            >
+                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            <div className="h-6 w-px bg-stone-200 dark:bg-stone-700 mx-1"></div>
+
             <button 
                 onClick={clearCanvas}
-                className="flex items-center gap-2 px-3 py-2 text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-stone-500 hover:text-red-600 hover:bg-red-50 dark:text-stone-400 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-lg text-sm font-medium transition-colors"
             >
                 <Trash2 className="w-4 h-4" />
                 清空
             </button>
             
-            <div className="h-6 w-px bg-stone-200 mx-1"></div>
+            <div className="h-6 w-px bg-stone-200 dark:bg-stone-700 mx-1"></div>
 
             <input 
                 type="file" 
@@ -186,14 +216,14 @@ function Flow() {
             />
             <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 rounded-lg text-sm font-medium transition-colors shadow-sm active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-600 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700 rounded-lg text-sm font-medium transition-colors shadow-sm active:scale-95"
             >
                 <Upload className="w-4 h-4" />
                 导入
             </button>
              <button 
                 onClick={onExport}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white hover:bg-stone-800 rounded-lg text-sm font-medium transition-colors shadow-md active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-stone-700 text-white hover:bg-stone-800 dark:hover:bg-stone-600 rounded-lg text-sm font-medium transition-colors shadow-md active:scale-95"
             >
                 <Download className="w-4 h-4" />
                 导出
@@ -202,7 +232,7 @@ function Flow() {
       </div>
       
       {/* Editor */}
-      <div className="flex-1 bg-stone-50">
+      <div className="flex-1 bg-stone-50 dark:bg-stone-950 transition-colors">
         <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -214,18 +244,18 @@ function Flow() {
             defaultEdgeOptions={{ 
                 type: 'smoothstep', 
                 animated: true,
-                style: { stroke: '#78716c', strokeWidth: 2 }
+                style: { stroke: darkMode ? '#a8a29e' : '#78716c', strokeWidth: 2 }
             }}
             proOptions={{ hideAttribution: true }}
         >
-            <Background color="#e5e5e5" gap={20} variant={BackgroundVariant.Dots} />
-            <Controls className="!bg-white !border !border-stone-200 !shadow-md !rounded-lg overflow-hidden" />
+            <Background color={darkMode ? "#44403c" : "#e5e5e5"} gap={20} variant={BackgroundVariant.Dots} />
+            <Controls className="!bg-white dark:!bg-stone-800 !border !border-stone-200 dark:!border-stone-700 !shadow-md !rounded-lg overflow-hidden [&>button]:!border-b-stone-200 dark:[&>button]:!border-b-stone-700 [&>button]:!fill-stone-600 dark:[&>button]:!fill-stone-400 hover:[&>button]:!bg-stone-50 dark:hover:[&>button]:!bg-stone-700" />
             <MiniMap 
-                className="!bg-white !border !border-stone-200 !shadow-md !rounded-lg overflow-hidden" 
-                maskColor="rgba(245, 245, 244, 0.7)"
+                className="!bg-white dark:!bg-stone-800 !border !border-stone-200 dark:!border-stone-700 !shadow-md !rounded-lg overflow-hidden" 
+                maskColor={darkMode ? "rgba(28, 25, 23, 0.7)" : "rgba(245, 245, 244, 0.7)"}
                 nodeColor={(n) => {
-                    if (n.type === 'choice') return '#60a5fa';
-                    return '#a8a29e';
+                    if (n.type === 'choice') return darkMode ? '#3b82f6' : '#60a5fa';
+                    return darkMode ? '#57534e' : '#a8a29e';
                 }}
             />
         </ReactFlow>
